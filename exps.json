@@ -100,6 +100,14 @@
      "-s Random",
      "-u qp-nn TMP-NN Lb-NN",
      "-pn Sort:FB qp-nn:PN TMP-NN:TMP Lb-NN:PG",
-     "-l2 0 -l1 50000 -b 5 50 100 -t 0 -f 0 -n 500"]
-   
+     "-l2 0 -l1 50000 -b 5 50 100 -t 0 -f 0 -n 500"],
+
+    "fig14":["-d A B C",
+           "-l ls lg sf",
+     "-p Sort VB",
+     "-s GS GSL",
+     "-u SDD LS",
+     "-pn Sort:FB IHT:GSQ",
+     "-l2 0 -b 5 50 -t 1 -f 0 -n 500"]
+
 }

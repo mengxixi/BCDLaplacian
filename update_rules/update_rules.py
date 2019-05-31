@@ -83,6 +83,31 @@ def update(rule, x, A, b, loss, args, block, iteration):
     x[block] = x[block] + d_func(alpha)
     return x, args
 
+  elif rule in ["SDD"]:
+
+    H = h_func(x, A, b, block)
+
+    if not issddm(H):
+      # Increase the diagonal by the sum of the absolute values
+      # of the corresponding row to make it diagonally dominant
+      res = np.sum(np.abs(H), axis=1) - 2*np.diag(np.abs(H))
+      H[np.diag_indices_from(H)] += (res * np.sign(np.diag(H)))
+
+    g = g_func(x, A, b, block)
+
+    f_simple = lambda x: f_func(x, A, b)
+    # TODO: Call Julia's SDDM solver instead
+    d_func = lambda alpha: (- alpha * np.dot(np.linalg.pinv(H), g))
+
+
+    alpha = line_search.perform_line_search(x.copy(), g, 
+                                block, f_simple, d_func, alpha0=1.0,
+                                proj=None)
+
+    x[block] = x[block] + d_func(alpha)
+
+    return x, args
+
   ### Constrained update rules
   elif rule in ["Lb-NN"]:
     G = g_func(x, A, b, block)
@@ -252,3 +277,16 @@ def update(rule, x, A, b, loss, args, block, iteration):
   else:
     print(("update rule %s doesn't exist" % rule))
     raise
+
+
+## TDOO: Move to util
+def issymmetric(A):
+    return np.allclose(A, A.T, rtol=1e-5, atol=1e-8)
+
+
+def issddm(A):
+    if not issymmetric(A):
+        return False
+
+    return np.all((2*np.abs(np.diag(A))) >= np.sum(np.abs(A), axis=1))
+

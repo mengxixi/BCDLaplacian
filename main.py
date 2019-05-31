@@ -1,3 +1,4 @@
+import os
 import matplotlib
 matplotlib.use('agg')
 
@@ -9,7 +10,7 @@ from itertools import product
 from base import utils as ut
 from base import plot
 
-ROOT = "/mnt/AIDATA/home/issam.laradji"
+ROOT = "/home/siyi/tmp"
 
 loss2name = {"ls": "Least Squares", "lg":"Logistic", 
              "sf":"Softmax", "bp":"Quadratic",
@@ -19,9 +20,9 @@ if __name__ == "__main__":
     argsList = parse_args.parse()
 
     # DEFINTE PATHs
-    plots_path = ROOT + "/Checkpoints/CoordinateDescent/Figures/"
-    logs_path = ROOT + "/Checkpoints/CoordinateDescent/Logs/"
-    datasets_path = ROOT + "/Datasets/CoordinateDescent/"
+    plots_path = os.path.join(ROOT, "/Checkpoints/CoordinateDescent/Figures")
+    logs_path = os.path.join(ROOT, "/Checkpoints/CoordinateDescent/Logs")
+    datasets_path = os.path.join(ROOT, "/Datasets/CoordinateDescent")
 
     # LOOP OVER EXPERIMENTS
     for args in argsList:   
@@ -107,7 +108,7 @@ if __name__ == "__main__":
         ########## PLOT STAGE #########
         fig = plot.plot(plotList, expName=args.expName, path=plots_path)
 
-        ut.visplot(fig, win=args.expName)
+        # ut.visplot(fig, win=args.expName)
         matplotlib.pyplot.close()
 
 

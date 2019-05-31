@@ -20,9 +20,9 @@ if __name__ == "__main__":
     argsList = parse_args.parse()
 
     # DEFINTE PATHs
-    plots_path = os.path.join(ROOT, "/Checkpoints/CoordinateDescent/Figures")
-    logs_path = os.path.join(ROOT, "/Checkpoints/CoordinateDescent/Logs")
-    datasets_path = os.path.join(ROOT, "/Datasets/CoordinateDescent")
+    plots_path = os.path.join(ROOT, "Checkpoints/CoordinateDescent/Figures")
+    logs_path = os.path.join(ROOT, "Checkpoints/CoordinateDescent/Logs")
+    datasets_path = os.path.join(ROOT, "Datasets/CoordinateDescent")
 
     # LOOP OVER EXPERIMENTS
     for args in argsList:   

@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+import julia
+jl = julia.Julia(compiled_modules=False)
+from julia import Main
+Main.include("update_rules/julia_wrappers.jl")
+
 import numpy as np
 from . import line_search
 import cvxopt
@@ -83,23 +88,26 @@ def update(rule, x, A, b, loss, args, block, iteration):
     x[block] = x[block] + d_func(alpha)
     return x, args
 
-  elif rule in ["SDD"]:
+  elif rule in ["SDDM"]:
 
     H = h_func(x, A, b, block)
+ 
+    # Set positive off-diagonal values to 0 since we need an M-matrix
+    diag = np.diag(H).copy()
+    H[H > 0] = 0; diag[diag < 0] = 0;
+    H += diag*np.eye(H.shape[0])
 
     if not issddm(H):
       # Increase the diagonal by the sum of the absolute values
       # of the corresponding row to make it diagonally dominant
-      res = np.sum(np.abs(H), axis=1) - 2*np.diag(np.abs(H))
+      res = np.sum(np.abs(H), axis=1) - 2*np.abs(diag)
+      res[res<0] = 0
       H[np.diag_indices_from(H)] += (res * np.sign(np.diag(H)))
 
-    g = g_func(x, A, b, block)
+    g = g_func(x, A, b, block) 
 
-    f_simple = lambda x: f_func(x, A, b)
-    # TODO: Call Julia's SDDM solver instead
-    d_func = lambda alpha: (- alpha * np.dot(np.linalg.pinv(H), g))
-
-
+    f_simple = lambda x: f_func(x, A, b)     
+    d_func = lambda alpha: (alpha * Main.solve_SDDM(H, -g))
     alpha = line_search.perform_line_search(x.copy(), g, 
                                 block, f_simple, d_func, alpha0=1.0,
                                 proj=None)

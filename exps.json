@@ -106,7 +106,7 @@
            "-l ls lg sf",
      "-p Sort VB",
      "-s GS GSL",
-     "-u SDD LS",
+     "-u SDDM LS",
      "-pn Sort:FB IHT:GSQ",
      "-l2 0 -b 5 50 -t 1 -f 0 -n 500"]
 

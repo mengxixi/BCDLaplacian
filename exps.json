@@ -108,5 +108,21 @@
      "-s GS GSL",
      "-u SDDM LS",
      "-pn Sort:FB IHT:GSQ",
-     "-l2 0 -b 5 50 100 -t 1 -f 0 -n 500"]
+     "-l2 0 -b 5 50 100 -t 1 -f 0 -n 500"],
+
+    "fig15":["-d A B C",
+           "-l ls lg sf",
+     "-p Sort Order",
+     "-s Random Cyclic",
+     "-u SDDM LS",
+     "-pn Sort:FB IHT:GSQ",
+     "-l2 0 -b 5 50 100 -t 1 -f 0 -n 500"],
+
+     "fig16":["-d A",
+           "-l ls",
+     "-p Sort VB",
+     "-s GS GSL",
+     "-u SDDM-full LS",
+     "-pn Sort:FB IHT:GSQ",
+     "-l2 0 -b 100 -t 1 -f 0 -n 500"]   
 }

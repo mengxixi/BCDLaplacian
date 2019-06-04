@@ -2,6 +2,7 @@ import numpy as np
 np.set_printoptions(formatter={'float': lambda x: "{0:0.16f}".format(x)})
 
 import os
+import time
 import pandas as pd
 
 from tqdm import tqdm
@@ -55,7 +56,7 @@ def train(dataset_name, loss_name, block_size, partition_rule,
         A, b, args = dataset["A"], dataset["b"], dataset["args"]
         
         args.update({"L2":L2, "L1":L1, "block_size":block_size, 
-                     "update_rule":update_rule})
+                     "update_rule":update_rule, "loss":loss_name})
 
         # loss function
         lossObject = losses.create_lossObject(loss_name, A, b, args)
@@ -72,6 +73,7 @@ def train(dataset_name, loss_name, block_size, partition_rule,
 
         ###### TRAINING STARTS HERE ############
         block = np.array([])
+        update_time = 0
         for i in range(n_iters + 1):
             # Compute loss
             loss = lossObject.f_func(x, A, b)
@@ -82,8 +84,8 @@ def train(dataset_name, loss_name, block_size, partition_rule,
             # if i == 10:
             #     import ipdb; ipdb.set_trace()  # breakpoint c7301fd5 //
 
-            stdout = ("%d - %s_%s_%s - dis2opt:%.16f - nz: %d/%d" % 
-                     (i, partition_rule, selection_rule, update_rule, dis2opt, (x!=0).sum(), x.size) )   
+            stdout = ("%d - %s_%s_%s - dis2opt:%.16f - nz: %d/%d - update_time: %.2f" % 
+                     (i, partition_rule, selection_rule, update_rule, dis2opt, (x!=0).sum(), x.size, update_time) )   
             #pbar.set_description(stdout)
             print(stdout)
 
@@ -107,7 +109,9 @@ def train(dataset_name, loss_name, block_size, partition_rule,
                 block, args = FB_selection_rules.select(selection_rule, x, A, b, lossObject, args, partition, iteration=i)
 
             # Update block
+            start = time.time()
             x, args = update_rules.update(update_rule, x, A, b, lossObject, args=args, block=block, iteration=i)
+            update_time = time.time() - start
 
         pbar.close()
         ut.save_pkl(fname, history)

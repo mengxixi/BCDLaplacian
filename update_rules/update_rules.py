@@ -25,7 +25,7 @@ def update(rule, x, A, b, loss, args, block, iteration):
 
   # L2 = args["L2"]
   
-  block_size = block.size
+  block_size = 0 if block is None else block.size
   param_size = x.size
 
   if rule in ["quadraticEg", "Lb"]:    
@@ -88,7 +88,13 @@ def update(rule, x, A, b, loss, args, block, iteration):
     x[block] = x[block] + d_func(alpha)
     return x, args
 
-  elif rule in ["SDDM"]:
+  elif rule in ["SDDM", "SDDM-full"]:
+
+    reuse_solver = False
+    if rule == "SDDM-full":
+      if args["loss"] == "ls" and args["L2"] == 0 and args["L1"] == 0:
+        # Hessian will be constant for all iterates
+        reuse_solver = True
 
     H = h_func(x, A, b, block)
 
@@ -112,12 +118,15 @@ def update(rule, x, A, b, loss, args, block, iteration):
     g = g_func(x, A, b, block) 
 
     f_simple = lambda x: f_func(x, A, b)     
-    d_func = lambda alpha: (alpha * Main.solve_SDDM(H, -g))
+    d_func = lambda alpha: (alpha * Main.solve_SDDM(H, -g, reuse_solver=reuse_solver))
     alpha = line_search.perform_line_search(x.copy(), g, 
                                 block, f_simple, d_func, alpha0=1.0,
                                 proj=None)
 
-    x[block] = x[block] + d_func(alpha)
+    if rule == "SDDM-full":
+      x = x + d_func(alpha)
+    else:
+      x[block] = x[block] + d_func(alpha)
 
     return x, args
 

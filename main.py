@@ -39,12 +39,21 @@ if __name__ == "__main__":
             for block_size in args.blockList:  
 
                 traceList = []
+
                 # Loop over p, s, and u rules
-                for p, s, u in product(args.p_rules, args.s_rules,
-                                       args.u_rules):
+                full_updates = []
+                if "SDDM-full" in args.u_rules:
+                  args.u_rules.remove("SDDM-full")
+                  full_updates.append((None, None, "SDDM-full"))
+
+                combinations = list(product(args.p_rules, args.s_rules,
+                                       args.u_rules))
+                combinations.extend(full_updates)
+
+                for p, s, u in combinations:
 
                     # Ignore the following combinations
-                    if ((p != "VB" and s == "BGSC") or
+                    if "-full" not in u and ((p != "VB" and s == "BGSC") or
                         (p != "VB" and s == "OMP") or
                         (p == "VB" and s == "GSQ") or
                         (p != "VB" and "GSQ-" in s) or

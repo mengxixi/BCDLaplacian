@@ -12,7 +12,7 @@ def get_partition(A, b, loss, block_size, p_rule):
     
     assert (n_params % block_size) == 0 
 
-  if p_rule == "Ada" or p_rule == "VB":
+  if p_rule is None or p_rule == "Ada" or p_rule == "VB":
       return None
 
   elif p_rule == "PCyclic" or p_rule =="Order":

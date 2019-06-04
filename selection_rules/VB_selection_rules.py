@@ -8,6 +8,9 @@ from scipy.sparse.linalg.eigen.arpack import eigsh as largest_eigsh
 from itertools import cycle
 ########### ------------------------------ ADAPTIVE RULES
 def select(rule, x, A, b, loss, args, iteration):
+    if rule is None:
+      return None, args
+
     """ Adaptive selection rules """
     n_params = x.size
     block_size = args["block_size"]

@@ -108,6 +108,5 @@
      "-s GS GSL",
      "-u SDDM LS",
      "-pn Sort:FB IHT:GSQ",
-     "-l2 0 -b 5 50 -t 1 -f 0 -n 500"]
-
+     "-l2 0 -b 5 50 100 -t 1 -f 0 -n 500"]
 }

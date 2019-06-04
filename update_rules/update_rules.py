@@ -91,18 +91,23 @@ def update(rule, x, A, b, loss, args, block, iteration):
   elif rule in ["SDDM"]:
 
     H = h_func(x, A, b, block)
- 
-    # Set positive off-diagonal values to 0 since we need an M-matrix
-    diag = np.diag(H).copy()
-    H[H > 0] = 0; diag[diag < 0] = 0;
-    H += diag*np.eye(H.shape[0])
 
-    if not issddm(H):
+    if not issdd(H):
       # Increase the diagonal by the sum of the absolute values
       # of the corresponding row to make it diagonally dominant
-      res = np.sum(np.abs(H), axis=1) - 2*np.abs(diag)
-      res[res<0] = 0
+      res = np.sum(np.abs(H), axis=1) - 2*np.abs(np.diag(H))
+      res[res < 0] = 0
       H[np.diag_indices_from(H)] += (res * np.sign(np.diag(H)))
+
+    if not ismmatrix(H):
+      # Set positive off-diagonal values to 0 since we need an M-matrix
+      diag = np.diag(H).copy()
+      H[H > 0] = 0; diag[diag < 0] = 0;
+      H[np.diag_indices_from(H)] += diag
+
+    # Ensure positive definiteness
+    # TODO: Allow adjustment to this param?
+    H[np.diag_indices_from(H)] += 1e-4
 
     g = g_func(x, A, b, block) 
 
@@ -291,8 +296,10 @@ def update(rule, x, A, b, loss, args, block, iteration):
 def issymmetric(A):
     return np.allclose(A, A.T, rtol=1e-5, atol=1e-8)
 
+def ismmatrix(A):
+    return np.all(A[np.where(~np.eye(A.shape[0],dtype=bool))] <= 0)
 
-def issddm(A):
+def issdd(A):
     if not issymmetric(A):
         return False
 

@@ -78,13 +78,13 @@ def train(dataset_name, loss_name, block_size, partition_rule,
             # Compute loss
             loss = lossObject.f_func(x, A, b)
             dis2opt = loss - OPTIMAL_LOSS[dataset_name + "_" + loss_name]
-            history += [{"loss":loss, "iteration":i, "selected":block}]
+            history += [{"loss":loss, "iteration":i, "selected":block, "time":update_time}]
 
 
             # if i == 10:
             #     import ipdb; ipdb.set_trace()  # breakpoint c7301fd5 //
 
-            stdout = ("%d - %s_%s_%s - dis2opt:%.16f - nz: %d/%d - update_time: %.2f" % 
+            stdout = ("%d - %s_%s_%s - dis2opt:%.16f - nz: %d/%d - update_time: %.2fs" % 
                      (i, partition_rule, selection_rule, update_rule, dis2opt, (x!=0).sum(), x.size, update_time) )   
             #pbar.set_description(stdout)
             print(stdout)

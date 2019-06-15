@@ -42,9 +42,10 @@ if __name__ == "__main__":
 
                 # Loop over p, s, and u rules
                 full_updates = []
-                if "SDDM-full" in args.u_rules:
-                  args.u_rules.remove("SDDM-full")
-                  full_updates.append((None, None, "SDDM-full"))
+                for rule in args.u_rules:
+                  if "-full" in rule:
+                    args.u_rules.remove(rule)
+                    full_updates.append((None, None, rule))
 
                 combinations = list(product(args.p_rules, args.s_rules,
                                        args.u_rules))

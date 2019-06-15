@@ -211,7 +211,7 @@ def update(rule, x, A, b, loss, args, block, iteration):
 
   ### BELIEF PROPAGATION ALGORITHMS
 
-  elif rule == "bpExact":
+  elif rule in ["bpExact", "bpExact-lap"]:
       n_params = x.size
       all_indices = np.arange(n_params)
       
@@ -222,13 +222,23 @@ def update(rule, x, A, b, loss, args, block, iteration):
       
       b_prime = A_bc.dot(x[non_block_indices]) - b[block]
 
-      x[block] = np.linalg.inv(A_bb).dot(- b_prime)  # are you missing the x[block] + ?
-      # Ans:
-      # No, this is the exact update of the objective function formulation under
-      # Appendix B. Derivation of Block Belief Propagation Update.
+      if rule == "bpExact":
+        x[block] = np.linalg.inv(A_bb).dot(- b_prime)  
+        # are you missing the x[block] + ?
+        # Ans:
+        # No, this is the exact update of the objective function formulation under
+        # Appendix B. Derivation of Block Belief Propagation Update.
+      else:
+        x[block] = Main.solve_SDDM(A_bb, -b_prime)
 
       return x, args
 
+  elif rule == "bpExact-lap-full":
+      if iteration == 0:
+        Main.reset_solver()
+
+      x = Main.solve_SDDM(A, b, reuse_solver=True)
+      return x, args
 
   elif rule == "bpGabp":
       A_sub = A[block][:, block]

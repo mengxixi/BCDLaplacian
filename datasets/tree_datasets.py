@@ -110,7 +110,7 @@ def nearest_Wy(root):
     # For dataset E
     np.random.seed(1)
     W_y = loadmat('%s/W_y.mat' % (root))
-    W = W_y["W"]
+    W = W_y["W"].astype(float)
 
     y = W_y["y"]
     y = y.ravel()

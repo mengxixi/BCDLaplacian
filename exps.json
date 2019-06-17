@@ -133,6 +133,15 @@
      "-u bpExact bpExact-lap bpExact-lap-full",
      "-pn TreePartitions:'Tree Partitions' GSLTree:'Greedy Tree'",
      " RTree:'Random Tree'",
-     "-l2 0 -b -1 -t 1 -f 0 -n 500"]
+     "-l2 0 -b -1 -t 1 -f 0 -n 500"],
+
+    "fig18":["-d E",
+           "-l bp", 
+     "-p VB",
+     "-s RTree GSLTree TreePartitions",
+     "-u bpExact bpExact-lap bpExact-lap-full",
+     "-pn TreePartitions:'Tree Partitions' GSLTree:'Greedy Tree'",
+     " RTree:'Random Tree'",
+     "-l2 0 -b -1 -t 1 -f 0 -n 500"]    
 }
 

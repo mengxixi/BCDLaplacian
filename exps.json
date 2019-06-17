@@ -129,10 +129,9 @@
     "fig17":["-d D",
            "-l bp", 
      "-p VB",
-     "-s RTree GSExactTree",
+     "-s RTree GSLTree TreePartitions",
      "-u bpExact bpExact-lap bpExact-lap-full",
-     "-pn GSExactTree:General TreePartitions:'Tree Partitions'",
-     " RedBlackTree:'Red Black' GSTree:'Greedy Tree'",
+     "-pn TreePartitions:'Tree Partitions' GSLTree:'Greedy Tree'",
      " RTree:'Random Tree'",
      "-l2 0 -b -1 -t 1 -f 0 -n 500"]
 }

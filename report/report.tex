@@ -1,0 +1,137 @@
+%
+% Template for Scribe Notes -- CS542F, modified from Will Evans' CS420+500
+% course offering
+%
+% (template is a modified version of one prepared by Erik Demaine at MIT)
+%  
+%
+%
+\documentclass[11pt]{article}
+\usepackage{microtype}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{todonotes} 
+\usepackage{graphicx}
+\usepackage{lineno}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{xspace}
+\usepackage{graphicx,epsfig,latexsym,subfig}
+%\usepackage{slashbox}
+\usepackage{graphicx,dblfloatfix}
+\usepackage{algorithm}% http://ctan.org/pkg/algorithms
+\usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{definition}
+\newtheorem{example}[theorem]{Example}
+
+\parindent 0in
+\parskip 1.5ex
+%\renewcommand{\baselinestretch}{1.25}
+
+\newcommand{\R}{\mathbb{R}}% use for capital R real number set symbol
+\newcommand{\inte}{\text{int }}
+\newcommand{\inner}[2]{\langle#1\,,\,#2\rangle}
+\newcommand{\centerfig}[2]{\begin{center}\includegraphics[width=#1\textwidth]{#2}\end{center}}
+\newcommand{\dom}{\text{dom}}
+\newcommand{\norm}[1]{\lVert#1\rVert}
+\newcommand{\defeq}{\vcentcolon=}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand*{\eg}{e.g.\@\xspace}
+\newcommand*{\ie}{i.e.\@\xspace}
+\newcommand{\etal}{\textit{et al.}}
+\newcommand{\fof}[1]{f(#1)}
+\newcommand{\gradf}[1]{\nabla f(#1)}
+\newcommand{\sgradf}[2]{\nabla f_{#1}(#2)}
+\newcommand{\hessf}[1]{\nabla^2 f(#1)}
+\newcommand{\normM}[2]{\|#2\|_{#1}}
+\newcommand{\tr}{\text{tr}}
+\newcommand{\diag}{\text{diag}}
+\newcommand{\bhessf}[2]{\nabla^2_{#2} f(#1)}
+\newcommand{\bgradf}[2]{\nabla_{#2} f(#1)}
+
+\title{Block Coordinate Descent with Newton Updates using Fast Laplacian Solvers}
+\author{
+  Si Yi (Cathy) Meng \\
+  \texttt{mengxixi@cs.ubc.ca} 
+}
+\date{\today}
+
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Block coordinate descent methods have gained much interest due to its wide applicability in large scale optimization. Many of these methods adopt gradient updates which require only first-order information due to their cheap iteration cost. By leveraging second-order information, block Newton updates could potentially yield significant convergence improvement. Although this amounts to solving a linear system at each iteration that incurs a cost cubic in the number of variables in that block, under certain problem structures, this cost can be reduced to (near) linear with fast solvers. In this technical report, we demonstrate that when the (sub)Hessian of the objective function is a Laplacian or SDDM matrix, we are able to converge in the same number of iterations with much lower iteration cost. \todo{anything else to add?}
+
+
+
+
+\end{abstract}
+
+\section{Introduction}
+Block coordinate descent (BCD) methods have been widely used in large-scale optimization. \todo{Make this part less generic, and add applications when appropriate} The main advantage of updating only a subset of the variables at each iteration lies in the low computation and memory requirements. 
+
+The problem we are interested in is the following,
+\begin{equation}
+\underset{x\in\R^n}{\arg\min}f(x)
+\end{equation}
+where $f(x)$ is a convex, continuously differentiable function. We consider problems where $n$ is very large, in which case updating all variables at every iteration may not be feasible, and thus blockwise coordinate update approach must be adopted. At each iteration, we select a subset of the $n$ variables $b_k\subseteq{1,2,\dots,n}$ and perform block updates of the form
+\begin{equation}
+x_{b_k}^{k+1}=x^k_{b_k}+\alpha_kd^k
+\end{equation}
+where $d^k$ is selected to provide descent in the direction associated with the selected variables, and $\alpha_k$ is the step size that can either be a constant or selected using line-search techniques. With Newton updates, we compute the sub-Hessian associated with the selected block $\bhessf{x^k}{b_kb_k}$ as well as the partial derivatives $\bgradf{x^k}{b_k}$ and take the direction
+\begin{equation}
+d^k=-[\bhessf{x^k}{b_kb_k}]^{-1}\bgradf{x^k}{b_k}
+\end{equation}
+It is obvious that the main bottleneck in the computation of each update lies in computing the sub-Hessian, as well as solving the above linear system. The former is not too big of an issue since with block updates, the sub-Hessian is often much cheaper to compute than full Hessian. The latter is more troublesome since it will typically have $O(|b_k|^3)$ cost with standard matrix factorization methods. Therefore, even though choosing larger blocks can lead to substantial improvement on the number of iterations needed to converge, the iteration cost can be prohibitive. It has been shown that by choosing blocks with a \todo{rephrase this part} sparsity pattern, we can guarantee that the system can be solved in $O(|b_k|)$ time even with large blocks. \todo{cite Julie} However, the implementation will be problem-specific as the RB tree selection is kind of complicated. In this work, we demonstrate an alternate approach to achieve near linear cost for solving the Newton update under certain problem structures. That is, when the sub-Hessian is a Laplacian or symmetric, diagonally dominant $M$-matrix (SDDM matrix), we can leverage fast solvers to achieve the desired performance. For problems where Newton updates were impossible to apply for large blocks, this will be able to help. In addition, we also empirically show that when the sub-Hessian is not an SDDM matrix, we can use an approximation to obtain faster iterations. Results show that when the sub-Hessian already closely resemble that of an SDDM matrix, we don't lose too much using SDDM solvers, however, when the approximation is more crude, then obviously we converge much slower. At the end, we provide some benchmark results on the performance of the library in general to give you an idea of what kind of problems or problem sizes this thing is good for.
+
+
+\section{Background}
+\subsection{Block Coordinate Descent}
+Julie's work give heuristics (RB tree) for greedy block selection that allows for huge blocks in block Newton updates. Distributed setting..(yes you could solve LP in a distributed way, but if you don't have a distributed set up, you could leverage BCD in a master node instead, and still be quick.). 
+
+-variable block
+\subsection{Laplacian and SDDM Systems}
+Given an undirected graph $G$ with $n$ vertices, its Laplacian matrix $L\in\R^{n\times n}$ is formed by $L=D-A$, where $A$ is the adjacency matrix of the graph, and $D$ is the diagonal degree matrix where $D_{ii}=\sum_{j}A_{ij}$. By construction, $L$ is symmetric, has non-positive off diagonal values and its row sums are $0$. Moreover, one can show that it is always positive semidefinite, and the algebraic multiplicity of the eigenvalue $0$ coincides with the number of connected components of the graph \todo{cite Lx=b?}.
+
+
+- talk about what the heck is a Laplacian matrix, where does it occur
+- talk about what the heck is an SDDM matrix
+- A little bit about Kyng and Sachadeva's work
+
+\section{Experiments}
+\todo{Footnote code link}
+\section{Results}
+For Newton updates that correspond to solving laplacian systems, we pretty much don't lose anythign from using these fast solvers since the level of accuracy of the solve is a tunable parameter. See the curves almost overlap. 
+
+However with non Laplacian systems, though we could try to make it SDDM, depending on how much we need to approximate our performance may be very bad.
+\section{Additional Benchmark Results}
+\todo{Footnote code link}
+\section{Conclusion}
+
+
+\bibliographystyle{plain}
+\bibliography{ref.bib}
+
+\end{document}

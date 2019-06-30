@@ -77,7 +77,7 @@ def update(rule, x, A, b, loss, args, block, iteration):
     g = g_func(x, A, b, block)
 
     f_simple = lambda x: f_func(x, A, b)
-    d_func = lambda alpha: (- alpha * np.dot(np.linalg.pinv(H), g))
+    d_func = lambda alpha: (- alpha * Main.solve_pinv(H, g))
 
     
 
@@ -171,7 +171,7 @@ def update(rule, x, A, b, loss, args, block, iteration):
     # Perform Line search
     alpha = 1.0
     
-    u_func = lambda alpha: (- alpha * np.dot(np.linalg.inv(H), G))
+    u_func = lambda alpha: (- alpha * np.dot(Main.solve(H, G)))
     f_simple = lambda x: f_func(x, A, b, assert_nn=0)
 
     alpha = line_search.perform_line_search(x.copy(), G, 
@@ -223,7 +223,7 @@ def update(rule, x, A, b, loss, args, block, iteration):
       b_prime = A_bc.dot(x[non_block_indices]) - b[block]
 
       if rule == "bpExact":
-        x[block] = np.linalg.inv(A_bb).dot(- b_prime)  
+        x[block] = Main.solve(A_bb, -b_prime)
         # are you missing the x[block] + ?
         # Ans:
         # No, this is the exact update of the objective function formulation under

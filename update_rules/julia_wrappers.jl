@@ -14,6 +14,17 @@ function solve_SDDM(A, b; reuse_solver=false)
     return x
 end
 
+
 function reset_solver()
     global SOLVER = nothing
+end
+
+
+function solve_pinv(A, b)
+    return pinv(A)*b
+end
+
+
+function solve(A, b)
+    return A\b
 end

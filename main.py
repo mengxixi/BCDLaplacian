@@ -84,7 +84,7 @@ if __name__ == "__main__":
                     total_update_time = np.sum(history["time"])
                     legend = ut.legendFunc(p, s, u, args.p_rules, args.s_rules, 
                                            args.u_rules, args.plot_names)
-                    legend += "\n%.3fs" % total_update_time
+                    legend = "%.1fs\n" % total_update_time + legend
 
                     if "converged" in history.columns:
                       ind = np.where(np.isnan(np.array(history["converged"])))[0][-1] + 1

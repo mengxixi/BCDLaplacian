@@ -113,14 +113,16 @@ Julie's work give heuristics (RB tree) for greedy block selection that allows fo
 
 -variable block
 \subsection{Laplacian and SDDM Systems}
-Given an undirected graph $G$ with $n$ vertices, its Laplacian matrix $L\in\R^{n\times n}$ is formed by $L=D-A$, where $A$ is the adjacency matrix of the graph, and $D$ is the diagonal degree matrix where $D_{ii}=\sum_{j}A_{ij}$. By construction, $L$ is symmetric, has non-positive off diagonal values and its row sums are $0$. Moreover, one can show that it is always positive semidefinite, and the algebraic multiplicity of the eigenvalue $0$ coincides with the number of connected components of the graph \todo{cite Lx=b?}.
+Given an undirected graph $G$ with $n$ vertices, its Laplacian matrix $L\in\R^{n\times n}$ is formed by $L=D-A$, where $A$ is the adjacency matrix of the graph, and $D$ is the diagonal degree matrix where $D_{ii}=\sum_{j}A_{ij}$. By construction, $L$ is symmetric, has non-positive off diagonal values and its row sums are $0$. Moreover, one can show that it is always positive semidefinite, and the algebraic multiplicity of the eigenvalue $0$ coincides with the number of connected components of the graph \todo{cite Lx=b?}. Many problems in machine learning can be formualated as solving a Laplacian linear system such as spectral clustering, semi-supervised learning with label propagation and \todo{add one more?}. 
 
+A symmetric matrix $S$ is diagonally dominant needs to satisfy $|S_{ii}|\geq \sum_{j\neq i}|S_{ij}|$ for all $i$. We refer to a matrix as an $M$-matrix if it is positive definite and has non-positive off-diagonal values. Finally, we can combine these properties and introduce a symmetric, diagonally dominant $M$-matrix (SDDM) that can be thought of as a generalization to a Laplacian matrix. An SDDM matrix does not have to be explicitly constructed from an underlying graph, and does not require $0$ row sums. \todo{Where does SDDM matrices occur in ML?}
 
-- talk about what the heck is a Laplacian matrix, where does it occur
-- talk about what the heck is an SDDM matrix
-- A little bit about Kyng and Sachadeva's work
+\todo{Kyng and Sachedeva's work, as well as Dan Spielman's solver}
 
 \section{Experiments}
+
+
+
 \todo{Footnote code link}
 \section{Results}
 For Newton updates that correspond to solving laplacian systems, we pretty much don't lose anythign from using these fast solvers since the level of accuracy of the solve is a tunable parameter. See the curves almost overlap. 

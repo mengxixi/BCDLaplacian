@@ -60,7 +60,9 @@ def generate_datasets_D_or_E(root, name):
 
 
     return A, b, {"data_lattice":lattice,"data_nrows":nrows, 
-                  "data_ncols":ncols, "data_W":W, "data_y":y}
+                  "data_ncols":ncols, "data_W":W, "data_y":y, 
+                  "unlabeled": unlabeled_indices, 
+                  "labeled": labeled_indices}
 
 
 def ising_Wy(nrows=50, ncols=50):

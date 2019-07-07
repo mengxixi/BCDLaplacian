@@ -12,9 +12,12 @@ from base import plot
 
 ROOT = "/home/siyi/tmp"
 
-loss2name = {"ls": "Least Squares", "lg":"Logistic", 
-             "sf":"Softmax", "bp":"Quadratic",
-             "lsl1nn":"Non-negative Least Squares"}
+loss2name = {"ls": "Least Squares", 
+             "lg":"Logistic", 
+             "sf":"Softmax", 
+             "bp":"Quadratic",
+             "bp_huber":"BP_Huber",
+             "lsl1nn":"Non-negative Least Squares",}
 
 if __name__ == "__main__":
     argsList = parse_args.parse()

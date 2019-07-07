@@ -10,7 +10,7 @@ import itertools
 import time 
 import pickle
 import pylab as plt
-from scipy.misc import imsave, imread
+from imageio import imsave, imread
 
 def visplot(fig, win="tmp"):
     import visdom

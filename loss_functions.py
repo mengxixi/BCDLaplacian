@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.misc import logsumexp
+from scipy.special import logsumexp
 from scipy.linalg import eigh
 
 from numba import jit
@@ -16,6 +16,9 @@ def create_lossObject(loss_name, A, b, args):
 
     if loss_name == "bp":
         return BeliefPropagation(A, b, args)
+
+    if loss_name == "bp_huber":
+      return BeliefPropagation_Huber(A, b, args)
 
     if loss_name == "lsl1nn":
         return Least_Square_L1_NN(A, b, args)
@@ -589,3 +592,127 @@ class BeliefPropagation:
     L_block = A_b + self.L2
     
     return L_block
+
+
+###########################
+# 3. Belief Propagation with Huber loss
+###########################
+class BeliefPropagation_Huber:
+  def __init__(self, A, b, args):
+    self.ylabel = "huber loss"
+    self.n_params = A.shape[1]
+    self.W = args["data_W"]
+    self.y = args["data_y"]
+    self.unlabeled_indices = args["unlabeled"]
+    self.labeled_indices = args["labeled"]
+    self.eps = 1
+
+    self.lipschitz = np.diag(A)
+
+  
+  def huber(self, z):
+    return np.where(np.abs(z)<=self.eps, 0.5*z**2, self.eps*(np.abs(z)-0.5*self.eps))
+
+  def huber_p(self, z):
+    return np.where(np.abs(z)<=self.eps, z, self.eps*np.sign(z))
+
+  def huber_pp(self, z):
+    return np.where(np.abs(z)<=self.eps, 1, 0)
+
+  def pairwise_differences(self, x, y):
+    return np.expand_dims(x,1)-y
+
+  def f_func(self, ybar, A=None, b=None):
+    # Unlabeled
+    W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+    z = self.pairwise_differences(ybar, ybar)
+    z = W_UU * self.huber(z)
+    loss = np.sum(z)
+
+    # Labeled
+    W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+    ylabled = self.y[self.labeled_indices]
+    z = self.pairwise_differences(ybar, ylabled)
+    z = W_UL * self.huber(z)
+    loss += np.sum(z)
+
+    return loss
+
+  def g_func(self, ybar, A=None, b=None, block=None):
+    if block is None:
+      # Unlabeled
+      W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+      z = self.pairwise_differences(ybar, ybar)
+      grad = 2*np.sum(W_UU*self.huber_p(z), axis=1)
+      
+      # Labeled
+      W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+      ylabled = self.y[self.labeled_indices]
+      z = self.pairwise_differences(ybar, ylabled)
+      grad += np.sum(W_UL*self.huber_p(z), axis=1)
+
+    else:    
+      # Unlabeled
+      W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+      W_UB = W_UU[block, :]
+      z = self.pairwise_differences(ybar[block], ybar)
+      grad = 2*np.sum(W_UB*self.huber_p(z), axis=1)
+
+      # Labeled
+      W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+      W_BL = W_UL[block, :]
+      ylabled = self.y[self.labeled_indices]
+      z = self.pairwise_differences(ybar[block], ylabled)
+      grad += np.sum(W_BL*self.huber_p(z), axis=1)
+
+    return grad
+
+  def h_func(self, ybar, A, b, block=None):
+    if block is None:
+      # Unlabeled
+      W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+      z = self.pairwise_differences(ybar, ybar)
+      hpp = self.huber_pp(z)
+      h = -2*W_UU*hpp + np.diag(2*np.sum(W_UU*hpp, axis=1))
+
+      # Labeled
+      W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+      ylabled = self.y[self.labeled_indices]
+      z = self.pairwise_differences(ybar, ylabled)
+      hpp = self.huber_pp(z)
+      h += np.diag(np.sum(W_UL*hpp, axis=1))
+
+    else:
+      # Unlabeled
+      W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+      W_UB = W_UU[block, :]
+      z = self.pairwise_differences(ybar[block], ybar)
+      h = -2*W_UB[:,block]*self.huber_pp(z[:,block]) + np.diag(2*np.sum(W_UB*self.huber_pp(z), axis=1))
+
+      # Labeled
+      W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+      W_BL = W_UL[block,:]
+      ylabled = self.y[self.labeled_indices]
+      z = self.pairwise_differences(ybar[block], ylabled)
+      hpp = self.huber_pp(z)
+      h += np.diag(np.sum(W_BL*hpp, axis=1))
+
+    return h
+
+  def Lb_func(self, x, A, b, block=None):
+    # BeliefPropagation
+    if block is None:
+      A_b = A
+    else:
+      A_b = A[block][:, block]
+
+    E = np.linalg.eigh(A_b)[0]
+    L_block = np.max(E) + self.L2
+    
+    return L_block
+
+  def Hb_func(self, x, A, b, block=None):
+    # BeliefPropagation
+    return self.h_func(x, A, b, block)
+
+

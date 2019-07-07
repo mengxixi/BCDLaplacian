@@ -11,6 +11,7 @@ import cvxopt
 import utils as ut 
 from cvxopt import solvers, matrix, spmatrix
 from scipy import sparse
+from scipy.optimize import approx_fprime
 from cvxopt import matrix, solvers
 from scipy.optimize import minimize
 
@@ -77,7 +78,7 @@ def update(rule, x, A, b, loss, args, block, iteration):
     g = g_func(x, A, b, block)
 
     f_simple = lambda x: f_func(x, A, b)
-    d_func = lambda alpha: (- alpha * Main.solve_pinv(H, g))
+    d_func = lambda alpha: (- alpha * np.linalg.pinv(H).dot(g))
 
     
 

@@ -32,9 +32,6 @@ class Least_Square:
     self.ylabel = "bp loss: $f(x) = \\frac{1}{2} x^T A x - b^Tx$"
     self.L2 = args["L2"]
     self.n_params = A.shape[1]
-
-    assert self.L2 == 0
-
     self.lipschitz = np.sum(A ** 2, axis=0) + self.L2
 
   def f_func(self, x, A, b):
@@ -111,8 +108,6 @@ class Least_Square_L1_NN:
     self.n_params = A.shape[1]
     self.L1 = args["L1"]
     
-    assert self.L2 == 0
-
     assert self.L1 != 0
 
     self.lipschitz = np.sum(A ** 2, axis=0) + self.L2
@@ -196,8 +191,6 @@ class Logistic:
     self.label = "Binary logistic loss"
     self.L2 = args["L2"]
     self.n_params = A.shape[1]
-
-    assert self.L2 == 0
 
     self.lipschitz = 0.25 * np.sum(A ** 2, axis=0) + self.L2
 
@@ -300,8 +293,6 @@ class Softmax:
     self.n_params = A.shape[1] * b.shape[1]
     self.n_features = A.shape[1]
     self.n_classes = b.shape[1]
-
-    assert self.L2 == 0
 
     self.lipschitz = (np.ones((self.n_classes, 1)) * 0.25 * 
                       np.sum(A ** 2, axis=0) + self.L2).T
@@ -520,8 +511,6 @@ class BeliefPropagation:
     self.L2 = args["L2"]
     self.n_params = A.shape[1]
 
-    assert self.L2 == 0
-
     self.lipschitz = np.diag(A) + self.L2
 
   def f_func(self, x, A, b):
@@ -607,7 +596,9 @@ class BeliefPropagation_Huber:
     self.labeled_indices = args["labeled"]
     self.eps = 1
 
-    self.lipschitz = np.diag(A)
+    self.L2 = args["L2"]
+    self.n_params = A.shape[1]
+    self.lipschitz = np.diag(A) + self.L2
 
   
   def huber(self, z):
@@ -636,6 +627,9 @@ class BeliefPropagation_Huber:
     z = W_UL * self.huber(z)
     loss += np.sum(z)
 
+    # Regularization
+    loss += 0.5 * self.L2 * np.sum(ybar**2)
+
     return loss
 
   def g_func(self, ybar, A=None, b=None, block=None):
@@ -651,6 +645,9 @@ class BeliefPropagation_Huber:
       z = self.pairwise_differences(ybar, ylabled)
       grad += np.sum(W_UL*self.huber_p(z), axis=1)
 
+      # Regularization
+      grad += self.L2*ybar
+
     else:    
       # Unlabeled
       W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
@@ -664,6 +661,9 @@ class BeliefPropagation_Huber:
       ylabled = self.y[self.labeled_indices]
       z = self.pairwise_differences(ybar[block], ylabled)
       grad += np.sum(W_BL*self.huber_p(z), axis=1)
+
+      # Regularization
+      grad += (self.L2 * ybar[block])
 
     return grad
 
@@ -682,6 +682,9 @@ class BeliefPropagation_Huber:
       hpp = self.huber_pp(z)
       h += np.diag(np.sum(W_UL*hpp, axis=1))
 
+      # Regularization
+      h += self.L2 * np.identity(len(ybar))
+
     else:
       # Unlabeled
       W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
@@ -696,6 +699,9 @@ class BeliefPropagation_Huber:
       z = self.pairwise_differences(ybar[block], ylabled)
       hpp = self.huber_pp(z)
       h += np.diag(np.sum(W_BL*hpp, axis=1))
+
+      # Regularization
+      h += self.L2 * np.identity(len(block))
 
     return h
 

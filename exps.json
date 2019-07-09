@@ -144,13 +144,16 @@
      " RTree:'Random Tree'",
      "-l2 0 -b -1 -t 1 -f 0 -n 500"],
 
-    "fig19":["-d E",
+    "fig19":["-d D E",
            "-l bp_huber", 
      "-p VB",
-     "-s RTree GSLTree TreePartitions",
+     "-s RTree GSTree GSExactTree RedBlackTree",
+     " TreePartitions TreePartitionsRandom RedBlackTreeRandom",
      "-u SDDM-full SDDM LS",
-     "-pn TreePartitions:'Tree Partitions' GSLTree:'Greedy Tree'",
-     " RTree:'Random Tree'",
-     "-l2 0 -b -1 -t 1 -f 0 -n 500"] 
+     "-pn GSExactTree:General TreePartitions:'Tree Partitions Lipschitz'",
+     " RedBlackTree:'Red Black Lipschitz' GSTree:'Greedy Tree'",
+     " RTree:'Random Tree' TreePartitionsRandom:'Tree Partitions Order'",
+     " RedBlackTreeRandom:'Red Black Order'",
+     "-l2 0 -b -1 -t 1 -f 0 -n 500"]
 }
 

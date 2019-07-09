@@ -79,7 +79,7 @@ if __name__ == "__main__":
                                           n_iters=args.n_iters,
                                           reset=args.reset,
                                           L1=args.L1,
-                                          L2=0,
+                                          L2=args.L2,
                                           root=ROOT,
                                           logs_path=logs_path,
                                           datasets_path=datasets_path)

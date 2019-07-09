@@ -15,7 +15,7 @@ def generate_datasets_D_or_E(root, name):
         lattice = True
 
         # Generate the weighted edges 'W' and the labels 'y'
-        W, y = ising_Wy(nrows, ncols)
+        W, y, ytrue, features = ising_Wy(nrows, ncols)
 
     if name == "nearest" or name == "dataset_e":
         # Dataset E - Unstructured quadratic
@@ -24,7 +24,7 @@ def generate_datasets_D_or_E(root, name):
         lattice = False
 
         # Generate the weighted edges 'W' and the labels 'y'
-        W, y = nearest_Wy(root)
+        W, y, ytrue, features = nearest_Wy(root)
 
     # Assert that the diagonals are zero
     assert np.diag(W).sum() == 0
@@ -62,7 +62,9 @@ def generate_datasets_D_or_E(root, name):
     return A, b, {"data_lattice":lattice,"data_nrows":nrows, 
                   "data_ncols":ncols, "data_W":W, "data_y":y, 
                   "unlabeled": unlabeled_indices, 
-                  "labeled": labeled_indices}
+                  "labeled": labeled_indices,
+                  "ytrue": ytrue,
+                  "features": features}
 
 
 def ising_Wy(nrows=50, ncols=50):
@@ -103,20 +105,23 @@ def ising_Wy(nrows=50, ncols=50):
     ind = np.random.choice(n, 100, replace=False)
     y = np.zeros(n)
 
-    y[ind] = np.random.randn(100) * 10.
+    y[ind] = np.sign(np.random.randn(100))
 
-    return W, y
+    return W, y, None, None
 
 
 def nearest_Wy(root):
     # For dataset E
     np.random.seed(1)
-    W_y = loadmat('%s/W_y.mat' % (root))
+    W_y = loadmat('%s/W_y_true.mat' % (root))
     W = W_y["W"].astype(float)
 
     y = W_y["y"]
     y = y.ravel()
 
+    ytrue = W_y["yTrue"]
+    features = W_y["x"]
+
     assert np.array_equal(np.unique(W), [0,1])
     
-    return W, y
+    return W, y, ytrue, features

@@ -102,10 +102,10 @@ def ising_Wy(nrows=50, ncols=50):
     W = W + np.tril(W.T, -1)
 
     # Labels
-    ind = np.random.choice(n, 100, replace=False)
+    ind = np.random.choice(n, 200, replace=False)
     y = np.zeros(n)
 
-    y[ind] = np.sign(np.random.randn(100))
+    y[ind] = np.sign(np.random.randn(200))
 
     return W, y, None, None
 

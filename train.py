@@ -24,8 +24,10 @@ OPTIMAL_LOSS = {"A_ls": 8.1234048724830014e-25,
                 "C_sf": 1.0881194612011313e-11, 
                 "D_bp": -1045999575.2270696, 
                 "D_bp_huber": 0.0,  # TODO: put these in
+                "D_bp_lg": 0.0,  # TODO: put these in
                 "E_bp": -717.708822011346,
-                "E_bp_huber": 0.0}  # TODO: put these in
+                "E_bp_huber": 0.0,   # TODO: put these in
+                "E_bp_lg": 0.0}  # TODO: put these in
 
 work = np.array([84,  220,  478,  558,  596,  753, 1103, 2009, 2044, 2301, 2410,
        2514, 2746, 3694, 4054, 4249, 4429, 4764, 5110, 5299, 5340, 5447,

@@ -18,7 +18,10 @@ def create_lossObject(loss_name, A, b, args):
         return BeliefPropagation(A, b, args)
 
     if loss_name == "bp_huber":
-      return BeliefPropagation_Huber(A, b, args)
+        return BeliefPropagation_Huber(A, b, args)
+
+    if loss_name == "bp_lg":
+        return BeliefPropagation_Logistic(A, b, args)
 
     if loss_name == "lsl1nn":
         return Least_Square_L1_NN(A, b, args)
@@ -588,7 +591,7 @@ class BeliefPropagation:
 ###########################
 class BeliefPropagation_Huber:
   def __init__(self, A, b, args):
-    self.ylabel = "huber loss"
+    self.ylabel = "bp huber"
     self.n_params = A.shape[1]
     self.W = args["data_W"]
     self.y = args["data_y"]
@@ -604,14 +607,18 @@ class BeliefPropagation_Huber:
   def huber(self, z):
     return np.where(np.abs(z)<=self.eps, 0.5*z**2, self.eps*(np.abs(z)-0.5*self.eps))
 
+
   def huber_p(self, z):
     return np.where(np.abs(z)<=self.eps, z, self.eps*np.sign(z))
+
 
   def huber_pp(self, z):
     return np.where(np.abs(z)<=self.eps, 1, 0)
 
+
   def pairwise_differences(self, x, y):
     return np.expand_dims(x,1)-y
+
 
   def f_func(self, ybar, A=None, b=None):
     # Unlabeled
@@ -722,3 +729,159 @@ class BeliefPropagation_Huber:
     return self.h_func(x, A, b, block)
 
 
+###########################
+# 4. Belief Propagation with Logistic loss
+###########################
+class BeliefPropagation_Logistic:
+  def __init__(self, A, b, args):
+    self.ylabel = "bp logistic"
+    self.n_params = A.shape[1]
+    self.W = args["data_W"]
+    self.y = args["data_y"]
+    self.unlabeled_indices = args["unlabeled"]
+    self.labeled_indices = args["labeled"]
+
+    self.L2 = args["L2"]
+    self.n_params = A.shape[1]
+
+    self.lipschitz = np.diag(A) + self.L2
+
+  
+  def logistic(self, z):
+    zeros = np.zeros(z.shape)
+    return logsumexp(np.stack([zeros, z], axis=2), axis=2)
+
+
+  def logistic_p(self, z):
+    return 1/(1+np.exp(-z))-1
+
+
+  def logistic_pp(self, z):
+    expz = np.exp(z)
+    return expz/((1+expz)**2)
+
+
+  def pairwise_products(self, x, y):
+    return np.expand_dims(x,1)*y
+
+
+  def f_func(self, ybar, A=None, b=None):
+    # Unlabeled
+    W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+    z = self.pairwise_products(ybar, ybar)
+    z = W_UU * self.logistic(z)
+    loss = np.sum(z)
+    
+    # Labeled
+    W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+    ylabled = self.y[self.labeled_indices]
+    z = self.pairwise_products(ybar, ylabled)
+    z = W_UL * self.logistic(z)
+    loss += np.sum(z)
+
+    # Regularization
+    loss += 0.5 * self.L2 * np.sum(ybar**2)
+
+    return loss
+
+  def g_func(self, ybar, A=None, b=None, block=None):
+    if block is None:
+      # Unlabeled
+      W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+      z = self.pairwise_products(ybar, ybar)
+      g = 2*np.sum(W_UU*self.logistic_p(z)*ybar, axis=1)
+      
+      # Labeled
+      W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+      ylabled = self.y[self.labeled_indices]
+      z = self.pairwise_products(ybar, ylabled)
+      g += np.sum(W_UL*self.logistic_p(z)*ylabled, axis=1)
+
+      # Regularization
+      g += self.L2*ybar
+
+    else:    
+      # Unlabeled
+      W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+      W_BU = W_UU[block, :]
+      ybar_b = ybar[block]
+      z = self.pairwise_products(ybar_b, ybar)
+      g = 2*np.sum(W_BU*self.logistic_p(z)*ybar, axis=1)
+
+      # Labeled
+      W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+      W_BL = W_UL[block, :]
+      ylabled = self.y[self.labeled_indices]
+      z = self.pairwise_products(ybar[block], ylabled)
+      g += np.sum(W_BL*self.logistic_p(z)*ylabled, axis=1)
+
+      # Regularization
+      g += (self.L2 * ybar[block])
+
+    return g
+
+  def h_func(self, ybar, A, b, block=None):
+    if block is None:
+      # Unlabeled
+      W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+      z = self.pairwise_products(ybar, ybar)
+      p = self.logistic_p(z)
+      pp = self.logistic_pp(z)
+      ybarsq = ybar**2
+      # Off-diagonals
+      h = 2*W_UU*(pp*z+p)
+      # Diagonals
+      h += np.diag(np.sum(2*W_UU*pp*ybarsq, axis=1) + np.diag(2*W_UU*pp*ybarsq+W_UU*p))
+
+      # Labeled
+      W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+      ylabled = self.y[self.labeled_indices]
+      z = self.pairwise_products(ybar, ylabled)
+      h += np.diag(np.sum(W_UL*self.logistic_pp(z)*(ylabled**2), axis=1))
+
+      # Regularization
+      h += self.L2 * np.identity(len(ybar))
+
+    else:
+      # Unlabeled
+      W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
+      W_BB = W_UU[block][:,block]
+      ybar_b = ybar[block]
+      z_BU = self.pairwise_products(ybar_b, ybar)
+      z = z_BU[:,block]
+      p = self.logistic_p(z)
+      pp = self.logistic_pp(z)
+      ybarsq = ybar_b**2
+      # Off-diagonals
+      h = 2*W_BB*(pp*z+p)
+      # Diagonals
+      W_BU = W_UU[block,:]
+      h += np.diag(np.sum(2*W_BU*self.logistic_pp(z_BU)*(ybar**2), axis=1) + np.diag(2*W_BB*pp*ybarsq+W_BB*p))
+
+      # Labeled
+      W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
+      W_BL = W_UL[block, :]
+      ylabled = self.y[self.labeled_indices]
+      z = self.pairwise_products(ybar[block], ylabled)
+      h += np.diag(np.sum(W_BL*self.logistic_pp(z)*(ylabled**2), axis=1))
+
+      # Regularization
+      h += self.L2 * np.identity(len(block))
+
+    return h
+
+  def Lb_func(self, x, A, b, block=None):
+    # BeliefPropagation
+    if block is None:
+      A_b = A
+    else:
+      A_b = A[block][:, block]
+
+    E = np.linalg.eigh(A_b)[0]
+    L_block = np.max(E) + self.L2
+    
+    return L_block
+
+  def Hb_func(self, x, A, b, block=None):
+    # BeliefPropagation
+    return self.h_func(x, A, b, block)

@@ -29,6 +29,8 @@ def update(rule, x, A, b, loss, args, block, iteration):
   block_size = 0 if block is None else block.size
   param_size = x.size
 
+  print("block size: %d, param size: %d" % (block_size, param_size))
+
   if rule in ["quadraticEg", "Lb"]:    
     """This computes the eigen values of the lipschitz values corresponding to the block"""
     # WE NEED TO DOUBLE CHECK THIS!
@@ -78,9 +80,23 @@ def update(rule, x, A, b, loss, args, block, iteration):
     g = g_func(x, A, b, block)
 
     f_simple = lambda x: f_func(x, A, b)
-    d_func = lambda alpha: (- alpha * np.linalg.pinv(H).dot(g))
+    def d_func(alpha):
+      try:
+        return (- alpha * np.linalg.pinv(H).dot(g))
+      except:
+        pass
 
-    
+      try:
+        return (- alpha * np.linalg.inv(H).dog(g))
+      except:
+        pass
+
+      try:
+        return (-alpha * np.linalg.lstsq(H, g, rcond=None)[0])
+      except:
+        # no clue, raise again and fail
+        raise
+    # d_func = lambda alpha: (- alpha * np.linalg.pinv(H).dot(g))
 
     alpha = line_search.perform_line_search(x.copy(), g, 
                                 block, f_simple, d_func, alpha0=1.0,
@@ -100,13 +116,15 @@ def update(rule, x, A, b, loss, args, block, iteration):
     H = h_func(x, A, b, block)
 
     if not issdd(H):
+      print("not SDD")
       # Increase the diagonal by the sum of the absolute values
       # of the corresponding row to make it diagonally dominant
       res = np.sum(np.abs(H), axis=1) - 2*np.abs(np.diag(H))
       res[res < 0] = 0
-      H[np.diag_indices_from(H)] += (res * np.sign(np.diag(H)))
+      H[np.diag_indices_from(H)] += (res * np.where(np.diag(H)>=0, 1, -1))
 
     if not ismmatrix(H):
+      print("not M matrix")
       # Set positive off-diagonal values to 0 since we need an M-matrix
       diag = np.diag(H).copy()
       H[H > 0] = 0; diag[diag < 0] = 0;
@@ -123,6 +141,7 @@ def update(rule, x, A, b, loss, args, block, iteration):
     alpha = line_search.perform_line_search(x.copy(), g, 
                                 block, f_simple, d_func, alpha0=1.0,
                                 proj=None)
+    print("alpha: %f" % alpha)
 
     if rule == "SDDM-full":
       x = x + d_func(alpha)

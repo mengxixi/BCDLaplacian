@@ -741,7 +741,8 @@ class BeliefPropagation_Logistic:
     self.unlabeled_indices = args["unlabeled"]
     self.labeled_indices = args["labeled"]
 
-    self.L2 = args["L2"]
+    # Need some form of regularization otherwise it'll go to infty
+    self.L2 = args["L2"] == 0? 1e-3 : args["L2"]
     self.n_params = A.shape[1]
 
     self.lipschitz = np.diag(A) + self.L2

@@ -84,10 +84,10 @@ if __name__ == "__main__":
                                           logs_path=logs_path,
                                           datasets_path=datasets_path)
 
-                    total_update_time = np.sum(history["time"])
+                    avg_update_time = history["time"].values[-1]
                     legend = ut.legendFunc(p, s, u, args.p_rules, args.s_rules, 
                                            args.u_rules, args.plot_names)
-                    legend = "%.1fs\n" % total_update_time + legend
+                    legend = "%s\n%.1fs/it" % (legend, avg_update_time)
 
                     if "converged" in history.columns:
                       ind = np.where(np.isnan(np.array(history["converged"])))[0][-1] + 1

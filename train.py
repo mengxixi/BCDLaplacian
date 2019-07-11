@@ -24,10 +24,8 @@ OPTIMAL_LOSS = {"A_ls": 8.1234048724830014e-25,
                 "C_sf": 1.0881194612011313e-11, 
                 "D_bp": -1045999575.2270696, 
                 "D_bp_huber": 0.0,  # TODO: put these in
-                "D_bp_lg": 0.0,  # TODO: put these in
                 "E_bp": -717.708822011346,
-                "E_bp_huber": 0.0,   # TODO: put these in
-                "E_bp_lg": 0.0}  # TODO: put these in
+                "E_bp_huber": 33.64404378742428}
 
 work = np.array([84,  220,  478,  558,  596,  753, 1103, 2009, 2044, 2301, 2410,
        2514, 2746, 3694, 4054, 4249, 4429, 4764, 5110, 5299, 5340, 5447,
@@ -77,18 +75,18 @@ def train(dataset_name, loss_name, block_size, partition_rule,
 
         ###### TRAINING STARTS HERE ############
         block = np.array([])
-        update_time = 0
+        avg_update_time = 0
         for i in range(n_iters + 1):
             # Compute loss
             loss = lossObject.f_func(x, A, b)
             dis2opt = loss - OPTIMAL_LOSS[dataset_name + "_" + loss_name]
-            history += [{"loss":loss, "iteration":i, "selected":block, "time":update_time, "x":x}]
+            history += [{"loss":loss, "iteration":i, "selected":block, "time":avg_update_time, "x":x}]
 
             # if i == 10:
             #     import ipdb; ipdb.set_trace()  # breakpoint c7301fd5 //
 
-            stdout = ("%d - %s_%s_%s - dis2opt:%.16f - nz: %d/%d - update_time: %.2fs" % 
-                     (i, partition_rule, selection_rule, update_rule, dis2opt, (x!=0).sum(), x.size, update_time) )   
+            stdout = ("%d - %s_%s_%s - dis2opt:%.16f - nz: %d/%d - avg_update_time: %.2fs" % 
+                     (i, partition_rule, selection_rule, update_rule, dis2opt, (x!=0).sum(), x.size, avg_update_time) )   
             #pbar.set_description(stdout)
             print(stdout)
 
@@ -115,6 +113,7 @@ def train(dataset_name, loss_name, block_size, partition_rule,
             start = time.time()
             x, args = update_rules.update(update_rule, x, A, b, lossObject, args=args, block=block, iteration=i)
             update_time = time.time() - start
+            avg_update_time = (avg_update_time*i+update_time)/(i+1)
 
         pbar.close()
         ut.save_pkl(fname, history)

@@ -24,12 +24,13 @@ if __name__ == "__main__":
 
     subexps = history_list.keys()
     for subexp in subexps:
+        print(subexp)
         history = history_list[subexp]
         dataset = datasets.load(args.dataset_names[0], path=datasets_path)
         _, _, dargs = dataset["A"], dataset["b"], dataset["args"]
 
-        y = dargs["ytrue"]
-        ybar = y[dargs["unlabeled"]]
-        # print(history["loss"].values[-1])
-        print(history["x"].values[-1]) 
-        # print(ybar)   
+        unlabled_indices = dargs["unlabeled"]
+
+        ytrue = dargs["ytrue"][unlabled_indices].squeeze(1)
+        ybar = history["x"].values[-1]
+        print(np.sum(np.abs(ytrue -ybar)))

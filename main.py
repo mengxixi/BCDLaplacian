@@ -96,7 +96,11 @@ if __name__ == "__main__":
                     else:
                       converged = None
 
-                    traceList += [{"Y":np.array(history["loss"]), 
+                    loss = np.array(history["loss"])
+                    if np.min(loss) <= 1e-10:
+                      # Quick hack to make the plot nicer
+                      loss = np.maximum(loss, 1e-8)
+                    traceList += [{"Y":loss, 
                                    "X":np.array(history["iteration"]),
                                    "legend":legend,
                                    "converged":converged}]

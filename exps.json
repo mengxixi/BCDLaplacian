@@ -147,7 +147,7 @@
     "fig19":["-d D",
            "-l bp_huber", 
      "-p VB",
-     "-s RTree GSTree TreePartitions"
+     "-s RTree GSTree TreePartitions",
      "-u LS SDDM SDDM-full",
      "-pn GSExactTree:General TreePartitions:'Tree Partitions'",
      " RedBlackTree:'Red Black' GSTree:'Greedy Tree'",

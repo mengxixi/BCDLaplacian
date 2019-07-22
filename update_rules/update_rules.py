@@ -4,7 +4,10 @@ jl = julia.Julia(compiled_modules=False)
 from julia import Main
 Main.include("update_rules/julia_wrappers.jl")
 
+import sys
 import numpy as np
+np.set_printoptions(threshold=sys.maxsize)
+
 from . import line_search
 import cvxopt
 
@@ -73,39 +76,26 @@ def update(rule, x, A, b, loss, args, block, iteration):
     return x_new, args
 
   # Line Search
-  elif rule in ["LS"]:    
+  elif rule in ["LS", "LS-full"]:    
 
     H = h_func(x, A, b, block)
 
     g = g_func(x, A, b, block)
 
     f_simple = lambda x: f_func(x, A, b)
-    def d_func(alpha):
-      try:
-        return (- alpha * np.linalg.pinv(H).dot(g))
-      except:
-        pass
-
-      try:
-        return (- alpha * np.linalg.inv(H).dog(g))
-      except:
-        pass
-
-      try:
-        return (-alpha * np.linalg.lstsq(H, g, rcond=None)[0])
-      except:
-        # no clue, raise again and fail
-        raise
-    # d_func = lambda alpha: (- alpha * np.linalg.pinv(H).dot(g))
+    d_func = lambda alpha: (- alpha * Main.solve(H, g))
 
     alpha = line_search.perform_line_search(x.copy(), g, 
                                 block, f_simple, d_func, alpha0=1.0,
                                 proj=None)
+    print("alpha: %f" % alpha)
 
     x[block] = x[block] + d_func(alpha)
     return x, args
 
   elif rule in ["SDDM", "SDDM-full"]:
+    if iteration == 0:
+      Main.reset_solver()
 
     reuse_solver = False
     if rule == "SDDM-full":
@@ -115,13 +105,24 @@ def update(rule, x, A, b, loss, args, block, iteration):
 
     H = h_func(x, A, b, block)
 
-    if not issdd(H):
-      print("not SDD")
-      # Increase the diagonal by the sum of the absolute values
-      # of the corresponding row to make it diagonally dominant
-      res = np.sum(np.abs(H), axis=1) - 2*np.abs(np.diag(H))
-      res[res < 0] = 0
-      H[np.diag_indices_from(H)] += (res * np.where(np.diag(H)>=0, 1, -1))
+    if not issymmetric(H):
+      print("not symmetric possibly due to numerical issues")
+      H = np.tril(H) + np.triu(H.T, 1)
+
+    dd = diagonal_dominance(H)
+    if not np.all(dd > 0):
+      if np.all(dd == 0):
+        # If we are only diagonally dominant, increase the diagonaly slightly
+        # so we are positive definite
+        H[np.diag_indices_from(H)] += 1e-4
+      else:
+        print("not SDD")
+        # Increase the diagonal by the sum of the absolute values
+        # of the corresponding row to make it diagonally dominant
+        res = np.sum(np.abs(H), axis=1) - 2*np.abs(np.diag(H))
+        res[res < 0] = 0
+        H[np.diag_indices_from(H)] += (res * np.where(np.diag(H)>=0, 1, -1))
+
 
     if not ismmatrix(H):
       print("not M matrix")
@@ -130,13 +131,9 @@ def update(rule, x, A, b, loss, args, block, iteration):
       H[H > 0] = 0; diag[diag < 0] = 0;
       H[np.diag_indices_from(H)] += diag
 
-    # Ensure positive definiteness
-    # TODO: Allow adjustment to this param?
-    H[np.diag_indices_from(H)] += 1e-4
-
     g = g_func(x, A, b, block) 
 
-    f_simple = lambda x: f_func(x, A, b)     
+    f_simple = lambda x: f_func(x, A, b)
     d_func = lambda alpha: (alpha * Main.solve_SDDM(H, -g, reuse_solver=reuse_solver))
     alpha = line_search.perform_line_search(x.copy(), g, 
                                 block, f_simple, d_func, alpha0=1.0,
@@ -260,6 +257,15 @@ def update(rule, x, A, b, loss, args, block, iteration):
       x = Main.solve_SDDM(A, b, reuse_solver=True)
       return x, args
 
+
+  elif rule == "bpExact-full":
+      if iteration == 0:
+        Main.reset_solver()
+
+      x = Main.solve(A, b)
+      return x, args
+
+
   elif rule == "bpGabp":
       A_sub = A[block][:, block]
 
@@ -337,6 +343,9 @@ def issymmetric(A):
 
 def ismmatrix(A):
     return np.all(A[np.where(~np.eye(A.shape[0],dtype=bool))] <= 0)
+
+def diagonal_dominance(A):
+  return (2*np.abs(np.diag(A))) - np.sum(np.abs(A), axis=1)
 
 def issdd(A):
     if not issymmetric(A):

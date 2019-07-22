@@ -246,7 +246,16 @@ class PrettyPlot:
 
             if self.legend_type == "line":
                 x_point, y_point = label_positions[i]
+                for j in range(i):
+                    if label_positions[j][1] == y_point:
+                        # Avoid complete overlap
+                        y_point *= 10
+
                 angle = get_label_angle(x_vals, y_vals, label_indices[i], ax, color='0.5', size=12)
+
+                if x_point < 10:
+                    # Avoid being too close to the y-axis blocking ylabels
+                    x_point += 50
 
                 box = dict(facecolor="white",
                     edgecolor=color, linestyle=ls,
@@ -272,7 +281,7 @@ class PrettyPlot:
         ax.set_xlabel(xlabel, fontsize=self.axFontSize)
 
         ax.tick_params(labelsize=self.axTickSize)
-        ax.tick_params(axis='y', labelsize=int(self.axTickSize*1.5))
+        ax.tick_params(axis='y', labelsize=int(self.axTickSize*1.2))
         self.y_list = []
         self.x_list = []
         self.labels = []

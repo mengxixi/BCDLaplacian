@@ -22,15 +22,28 @@ if __name__ == "__main__":
     log_file = logs_path + args.expName + ".pkl"
     history_list = ut.load_pkl(log_file)
 
-    subexps = history_list.keys()
-    for subexp in subexps:
-        print(subexp)
-        history = history_list[subexp]
-        dataset = datasets.load(args.dataset_names[0], path=datasets_path)
-        _, _, dargs = dataset["A"], dataset["b"], dataset["args"]
+    subexps = list(history_list.values())
+    
+    losses = []
+    for i in range(len(subexps)):
+        name = list(history_list.keys())[i]
+        if "Greedy Tree" in name:
+            history = subexps[i]
+            dataset = datasets.load(args.dataset_names[0], path=datasets_path)
+            _, _, dargs = dataset["A"], dataset["b"], dataset["args"]
 
-        unlabled_indices = dargs["unlabeled"]
+            unlabled_indices = dargs["unlabeled"]
 
-        ytrue = dargs["ytrue"][unlabled_indices].squeeze(1)
-        ybar = history["x"].values[-1]
-        print(np.sum(np.abs(ytrue -ybar)))
+            ybar = history["x"].values[-1]
+            # if "ytrue" in dargs.keys() and dargs["ytrue"] is not None:
+            #     ytrue = dargs["ytrue"][unlabled_indices].squeeze(1)
+            #     print(np.linalg.norm(ybar-ytrue))
+            # else:
+            #     print(np.min(ybar))
+            #     print(np.max(ybar))
+                # print(len(ybar), len(ytrue))
+            losses.append(history["loss"])
+            # print(history["loss"].values[-1])
+            # print(np.sum(np.abs(ytrue -ybar)))
+
+    print(losses[0]-losses[1])

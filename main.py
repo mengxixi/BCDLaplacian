@@ -45,13 +45,14 @@ if __name__ == "__main__":
 
                 # Loop over p, s, and u rules
                 full_updates = []
+                block_updates = args.u_rules.copy()
                 for rule in args.u_rules:
                   if "-full" in rule:
-                    args.u_rules.remove(rule)
+                    block_updates.remove(rule)
                     full_updates.append((None, None, rule))
 
                 combinations = list(product(args.p_rules, args.s_rules,
-                                       args.u_rules))
+                                       block_updates))
                 combinations.extend(full_updates)
 
                 for p, s, u in combinations:
@@ -87,7 +88,8 @@ if __name__ == "__main__":
                     avg_update_time = history["time"].values[-1]
                     legend = ut.legendFunc(p, s, u, args.p_rules, args.s_rules, 
                                            args.u_rules, args.plot_names)
-                    legend = "%s\n%.1fs/it" % (legend, avg_update_time)
+
+                    legend = "%s\n%.2fs/it" % (legend.strip("-None"), avg_update_time)
 
                     if "converged" in history.columns:
                       ind = np.where(np.isnan(np.array(history["converged"])))[0][-1] + 1
@@ -97,7 +99,7 @@ if __name__ == "__main__":
                       converged = None
 
                     loss = np.array(history["loss"])
-                    if np.min(loss) <= 1e-10:
+                    if np.min(loss) <= 1e-8:
                       # Quick hack to make the plot nicer
                       loss = np.maximum(loss, 1e-8)
                     traceList += [{"Y":loss, 

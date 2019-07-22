@@ -55,7 +55,7 @@ def parse():
             exp_args = ut.parseArg_json(exp, parser, fname="exps.json")
             
             ### OVERRIDE WITH IO_ARGS
-            for key in ["assert_decrease", "test_grad", "reset", "L2"]:
+            for key in ["assert_decrease", "test_grad", "reset"]:
                 vars(exp_args)[key] =  vars(io_args)[key]
 
             vars(exp_args)["expName"] = exp

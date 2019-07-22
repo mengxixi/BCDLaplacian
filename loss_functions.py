@@ -597,7 +597,7 @@ class BeliefPropagation_Huber:
     self.y = args["data_y"]
     self.unlabeled_indices = args["unlabeled"]
     self.labeled_indices = args["labeled"]
-    self.eps = 1
+    self.eps = 1.0
 
     self.L2 = args["L2"]
     self.n_params = A.shape[1]
@@ -645,7 +645,8 @@ class BeliefPropagation_Huber:
       W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
       z = self.pairwise_differences(ybar, ybar)
       grad = 2*np.sum(W_UU*self.huber_p(z), axis=1)
-      
+      grad -= 3*np.diag(W_UU)*self.huber_p(np.diag(z))
+
       # Labeled
       W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
       ylabled = self.y[self.labeled_indices]
@@ -653,7 +654,7 @@ class BeliefPropagation_Huber:
       grad += np.sum(W_UL*self.huber_p(z), axis=1)
 
       # Regularization
-      grad += self.L2*ybar
+      grad += (self.L2*ybar)
 
     else:    
       # Unlabeled
@@ -661,6 +662,7 @@ class BeliefPropagation_Huber:
       W_UB = W_UU[block, :]
       z = self.pairwise_differences(ybar[block], ybar)
       grad = 2*np.sum(W_UB*self.huber_p(z), axis=1)
+      grad -= 3*np.diag(W_UB)*self.huber_p(np.diag(z))
 
       # Labeled
       W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
@@ -680,7 +682,8 @@ class BeliefPropagation_Huber:
       W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
       z = self.pairwise_differences(ybar, ybar)
       hpp = self.huber_pp(z)
-      h = -2*W_UU*hpp + np.diag(2*np.sum(W_UU*hpp, axis=1))
+      Z = W_UU*hpp      
+      h = -2*Z + np.diag(2*np.sum(Z, axis=1)+np.diag(Z))
 
       # Labeled
       W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]
@@ -697,7 +700,8 @@ class BeliefPropagation_Huber:
       W_UU = self.W[self.unlabeled_indices][:,self.unlabeled_indices]
       W_UB = W_UU[block, :]
       z = self.pairwise_differences(ybar[block], ybar)
-      h = -2*W_UB[:,block]*self.huber_pp(z[:,block]) + np.diag(2*np.sum(W_UB*self.huber_pp(z), axis=1))
+      Z = W_UB[:,block]*self.huber_pp(z[:,block])
+      h = -2*Z + np.diag(2*np.sum(W_UB*self.huber_pp(z), axis=1)+np.diag(Z))
 
       # Labeled
       W_UL = self.W[self.unlabeled_indices][:,self.labeled_indices]

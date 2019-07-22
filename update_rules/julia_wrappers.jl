@@ -4,14 +4,36 @@ using Laplacians, SparseArrays, LinearAlgebra, Statistics, Logging
 SOLVER = nothing
 tol = 1e-16
 
+# Warm-up code to get the packages loaded/functions compiled
+# so time measurements are more accurate
+function warmup()
+    n = 1000
+    A = subsampleEdges(complete_graph(n), 0.05)
+    L = lap(A)
+    dval = zeros(n); dval[1] = dval[n] = 1e-3;
+    SDDM = L + spdiagm(0=>dval)
+    b = randn(n); b .-= mean(b)
+
+    solver = approxchol_sddm(SDDM, tol=tol)
+    x = solver(b)
+    println("warmup---Relative norm: ", norm(SDDM * x - b) / norm(b))
+
+    B = Symmetric(SDDM)
+    Chol = cholesky(B)
+    x = Chol\b 
+    println("warmup---Relative norm: ", norm(SDDM * x - b) / norm(b))
+end
+
+warmup()
+
+
 function solve_SDDM(A, b; reuse_solver=false)
-    if reuse_solver && SOLVER != nothing
-        x = SOLVER(b)
-    else
+    if !reuse_solver || SOLVER == nothing
         B = sparse(A)
         global SOLVER = approxchol_sddm(B, tol=tol)
-        x = SOLVER(b)
     end
+    x = SOLVER(b)
+
     return x
 end
 

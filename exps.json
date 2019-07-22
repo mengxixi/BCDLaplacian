@@ -183,7 +183,7 @@
            "-l bp", 
      "-p Sort",
      "-s Cyclic Lipschitz Random",
-     "-u bpExact bpExact-lap bpExact-lap-full",
+     "-u bpExact bpExact-lap bpExact-lap-full bpExact-full",
      "-pn Sort:FB Perm:Cyclic GSDHb:GSL",
      "-l2 0 -b 100 600 1200 -t 1 -f 0 -n 500"],
 
@@ -191,7 +191,7 @@
            "-l bp", 
      "-p Sort",
      "-s Cyclic Lipschitz Random",
-     "-u bpExact bpExact-lap bpExact-lap-full",
+     "-u bpExact bpExact-lap bpExact-lap-full bpExact-full",
      "-pn Sort:FB Perm:Cyclic GSDHb:GSL",
      "-l2 0 -b 10 100 950 -t 1 -f 0 -n 500"],
 

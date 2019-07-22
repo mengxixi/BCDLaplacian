@@ -259,9 +259,6 @@ def update(rule, x, A, b, loss, args, block, iteration):
 
 
   elif rule == "bpExact-full":
-      if iteration == 0:
-        Main.reset_solver()
-
       x = Main.solve(A, b)
       return x, args
 

@@ -38,8 +38,9 @@ def train(dataset_name, loss_name, block_size, partition_rule,
           update_rule, n_iters, L1, L2, reset=0, optimal=None, 
           root="", logs_path="", datasets_path=""):
     
+    tmp_block_size = 0 if "-full" in update_rule else block_size
     fname = ("%s/%s_%s_%d_%s_%s_%s_%d_%d_%d.npy" % 
-            (logs_path, dataset_name, loss_name, block_size, partition_rule, 
+            (logs_path, dataset_name, loss_name, tmp_block_size, partition_rule, 
              selection_rule, update_rule, n_iters, L1, L2))
 
     

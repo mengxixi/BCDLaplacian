@@ -255,7 +255,7 @@ class PrettyPlot:
 
                 if x_point < 10:
                     # Avoid being too close to the y-axis blocking ylabels
-                    x_point += 50
+                    x_point += 50*(90-np.abs(angle))/90
 
                 box = dict(facecolor="white",
                     edgecolor=color, linestyle=ls,

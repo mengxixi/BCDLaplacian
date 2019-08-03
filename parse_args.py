@@ -25,6 +25,7 @@ def parse():
     parser.add_argument('-e','--exp', nargs='+', default=[None])
     parser.add_argument('-desc','--description', default="default")
     parser.add_argument('-f','--show_fig', type=int, default=0)
+    parser.add_argument('-pt','--plot_time', type=int, default=0)
     parser.add_argument('-r','--reset',  nargs='+', type=str, default=[""])   
     parser.add_argument('-itp','--iterPlot',  type=int, default=None)  
     parser.add_argument('-psu','--partition_selection_update', nargs='+', default=[None])

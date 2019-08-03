@@ -89,7 +89,9 @@ if __name__ == "__main__":
                     legend = ut.legendFunc(p, s, u, args.p_rules, args.s_rules, 
                                            args.u_rules, args.plot_names)
 
-                    legend = "%s\n%.2fs/it" % (legend.strip("-None"), avg_update_time)
+                    legend = "%s" % legend.strip("-None")
+                    if args.plot_time:
+                      legend += "\n%.2fs/it" % avg_update_time
 
                     if "converged" in history.columns:
                       ind = np.where(np.isnan(np.array(history["converged"])))[0][-1] + 1

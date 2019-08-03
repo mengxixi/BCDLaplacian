@@ -107,7 +107,7 @@
      "-p Sort VB",
      "-s GS GSL",
      "-u SDDM LS",
-     "-pn Sort:FB IHT:GSQ",
+     "-pn Sort:FB IHT:GSQ LS:Exact SDDM:Lap",
      "-l2 0 -b 5 50 100 -t 1 -f 0 -n 500"],
 
     "fig15":["-d A B C",
@@ -115,7 +115,7 @@
      "-p Sort Order",
      "-s Random Cyclic",
      "-u SDDM LS",
-     "-pn Sort:FB IHT:GSQ",
+     "-pn Sort:FB IHT:GSQ LS:Exact SDDM:Lap",
      "-l2 0 -b 5 50 100 -t 1 -f 0 -n 500"],
 
     "fig16":["-d D",
@@ -124,7 +124,8 @@
      "-s RTree GSTree TreePartitions",
      "-u bpExact bpExact-lap bpExact-lap-full bpExact-full",
      "-pn TreePartitions:'Tree Partitions' GSTree:'Greedy Tree'",
-     " RTree:'Random Tree'",
+     " RTree:'Random Tree' bpExact:'Exact' bpExact-lap:'Lap'",
+     " bpExact-full:'Exact-full' bpExact-lap-full:'Lap-full'",
      "-l2 0 -b -1 -t 1 -f 0 -n 500"],
 
     "fig17":["-d E",
@@ -133,7 +134,8 @@
      "-s RTree GSTree TreePartitions",
      "-u bpExact bpExact-lap bpExact-lap-full bpExact-full",
      "-pn TreePartitions:'Tree Partitions' GSTree:'Greedy Tree'",
-     " RTree:'Random Tree'",
+     " RTree:'Random Tree' bpExact:'Exact' bpExact-lap:'Lap'",
+     " bpExact-full:'Exact-full' bpExact-lap-full:'Lap-full'",
      "-l2 0 -b -1 -t 1 -f 0 -n 500"],
 
     "fig18":["-d D",
@@ -141,7 +143,8 @@
      "-p Sort",
      "-s Cyclic Lipschitz Random",
      "-u LS SDDM SDDM-full LS-full",
-     "-pn Sort:FB Perm:Cyclic GSDHb:GSL",
+     "-pn Sort:FB Perm:Cyclic GSDHb:GSL LS:Exact SDDM:Lap SDDM-full:Lap-full",
+     " LS-full:Exact-full",
      "-l2 1e-3 -b 100 600 1200 -t 1 -f 0 -n 500"],
 
     "fig19":["-d E",
@@ -149,7 +152,8 @@
      "-p Sort",
      "-s Cyclic Lipschitz Random",
      "-u LS SDDM SDDM-full LS-full",
-     "-pn Sort:FB Perm:Cyclic GSDHb:GSL",
+     "-pn Sort:FB Perm:Cyclic GSDHb:GSL LS:Exact SDDM:Lap SDDM-full:Lap-full",
+     " LS-full:Exact-full",
      "-l2 1e-3 -b 10 100 950 -t 1 -f 0 -n 500"],
 
     "fig20":["-d D",
@@ -157,7 +161,8 @@
      "-p Order",
      "-s Cyclic Lipschitz Random",
      "-u LS SDDM SDDM-full LS-full",
-     "-pn Sort:FB Perm:Cyclic GSDHb:GSL",
+     "-pn Sort:FB Perm:Cyclic GSDHb:GS LS:Exact SDDM:Lap SDDM-full:Lap-full",
+     " LS-full:Exact-full",
      "-l2 1e-3 -b 100 600 1200 -t 1 -f 0 -n 500"],
 
     "fig21":["-d E",
@@ -165,7 +170,8 @@
      "-p Order",
      "-s Cyclic Lipschitz Random",
      "-u LS SDDM SDDM-full LS-full",
-     "-pn Sort:FB Perm:Cyclic GSDHb:GSL",
+     "-pn Sort:FB Perm:Cyclic GSDHb:GSL LS:Exact SDDM:Lap SDDM-full:Lap-full",
+     " LS-full:Exact-full",
      "-l2 1e-3 -b 10 100 950 -t 1 -f 0 -n 500"],
 
     "fig22":["-d D E",
@@ -176,7 +182,8 @@
      "-pn GSExactTree:General TreePartitions:'Tree Partitions Lipschitz'",
      " RedBlackTree:'Red Black Lipschitz' GSTree:'Greedy Tree'",
      " RTree:'Random Tree' TreePartitionsRandom:'Tree Partitions Order'",
-     " RedBlackTreeRandom:'Red Black Order'",
+     " RedBlackTreeRandom:'Red Black Order' bpExact:'Exact' bpExact-lap:'Lap'",
+     " bpExact-full:'Exact-full' bpExact-lap-full:'Lap-full'",
      "-l2 1e-3 -b -1 -t 1 -f 0 -n 500"],
 
     "fig23":["-d D",
@@ -184,7 +191,8 @@
      "-p Sort",
      "-s Cyclic Lipschitz Random",
      "-u bpExact bpExact-lap bpExact-lap-full bpExact-full",
-     "-pn Sort:FB Perm:Cyclic GSDHb:GSL",
+     "-pn Sort:FB Perm:Cyclic GSDHb:GSL bpExact:'Exact' bpExact-lap:'Lap'",
+     " bpExact-full:'Exact-full' bpExact-lap-full:'Lap-full'",
      "-l2 0 -b 100 600 1200 -t 1 -f 0 -n 500"],
 
     "fig24":["-d E",
@@ -192,14 +200,8 @@
      "-p Sort",
      "-s Cyclic Lipschitz Random",
      "-u bpExact bpExact-lap bpExact-lap-full bpExact-full",
-     "-pn Sort:FB Perm:Cyclic GSDHb:GSL",
-     "-l2 0 -b 10 100 950 -t 1 -f 0 -n 500"],
-
-    "figbl":["-d D",
-           "-l bp_huber", 
-     "-p Sort",
-     "-s Cyclic",
-     "-u LS-full",
-     "-l2 1e-3 -b 10 -t 1 -f 0 -n 500"]
+     "-pn Sort:FB Perm:Cyclic GSDHb:GSL bpExact:'Exact' bpExact-lap:'Lap'",
+     " bpExact-full:'Exact-full' bpExact-lap-full:'Lap-full'",
+     "-l2 0 -b 10 100 950 -t 1 -f 0 -n 500"]
      }
 

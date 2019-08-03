@@ -55,7 +55,7 @@ class FixedOrderFormatter(ScalarFormatter):
         self.orderOfMagnitude = self._order_of_mag
 class PrettyPlot:
     def __init__(self, title=None, ylabel=None, xlabel=None,
-                 fontsize=14, line_width=2.5, markersize=12,
+                 fontsize=14, line_width=3.5, markersize=12,
                  ratio=1.0,axFontSize=18,
                  figsize=(13, 10), legend_type="line",
                  yscale="log", subplots=(1,1),

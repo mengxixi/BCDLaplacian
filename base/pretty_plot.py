@@ -55,7 +55,7 @@ class FixedOrderFormatter(ScalarFormatter):
         self.orderOfMagnitude = self._order_of_mag
 class PrettyPlot:
     def __init__(self, title=None, ylabel=None, xlabel=None,
-                 fontsize=14, line_width=3.5, markersize=12,
+                 fontsize=14, line_width=3, markersize=12,
                  ratio=1.0,axFontSize=18,
                  figsize=(13, 10), legend_type="line",
                  yscale="log", subplots=(1,1),
@@ -208,7 +208,8 @@ class PrettyPlot:
         if not self.lim_set:
             y_min, y_max = get_min_max(y_list)
             x_min, x_max = get_min_max(x_list)
-            #y_min = max(y_min, 1e-8)
+            if self.ylim is not None:
+                y_min = max(y_min, self.ylim)
             ax.set_ylim([y_min, y_max]) 
             ax.set_xlim([x_min, x_max]) 
         
@@ -556,10 +557,10 @@ def get_labelPositions(y_list, x_list, ylim=None, labels=None, ref_points=None):
 
     # GET BORDER POINTS
     x_min, x_max = get_min_max(x_list)
+    y_min, y_max = get_min_max(y_list)
+
     if ylim is not None:
-        y_min, y_max = ylim
-    else:
-        y_min, y_max = get_min_max(y_list)
+        y_min, y_max = ylim, y_max
 
     xdiff = (x_max - x_min)
     ydiff = (y_max - y_min)

@@ -15,8 +15,8 @@ ROOT = "/home/siyi/tmp"
 loss2name = {"ls": "Least Squares", 
              "lg":"Logistic", 
              "sf":"Softmax", 
-             "bp":"Quadratic",
-             "bp_huber":"BP_Huber",
+             "bp":"LP_Quadratic",
+             "bp_huber":"LP_Huber",
              "lsl1nn":"Non-negative Least Squares",}
 
 if __name__ == "__main__":
@@ -101,9 +101,6 @@ if __name__ == "__main__":
                       converged = None
 
                     loss = np.array(history["loss"])
-                    if np.min(loss) <= 1e-8:
-                      # Quick hack to make the plot nicer
-                      loss = np.maximum(loss, 1e-8)
                     traceList += [{"Y":loss, 
                                    "X":np.array(history["iteration"]),
                                    "legend":legend,
@@ -115,11 +112,14 @@ if __name__ == "__main__":
                   xlabel = "Iterations"
                 else:
                   xlabel = "Iterations with %d-sized blocks" % block_size
-                  
+                
+                ylabel = "$f(x) - f^*$ for %s" % loss2name[loss_name]
+                if len(args.dataset_names) > 1:
+                  ylabel += " on Dataset %s" % dataset_name.upper()
+
                 figureList += [{"traceList":traceList,
                                 "xlabel":xlabel,
-                                "ylabel":("$f(x) - f^*$ for %s on Dataset %s" % 
-                                         (loss2name[loss_name], dataset_name.upper())),
+                                "ylabel":ylabel,
                                 "yscale":"log"}]
             
             plotList += [figureList]

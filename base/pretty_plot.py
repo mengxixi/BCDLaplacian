@@ -64,7 +64,7 @@ class PrettyPlot:
         self.fontsize = int(fontsize * ratio)
         self.shareRowLabel = shareRowLabel
         self.lim_set = False
-        self.ylim = None
+        self.ylim = 1e-6
         self.legend_type = legend_type
         self.yscale = yscale
         self.line_width = int(line_width * ratio)

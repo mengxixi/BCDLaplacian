@@ -202,6 +202,14 @@
      "-u bpExact-lap bpExact-lap-full",
      "-pn Sort:FB Perm:Cyclic GSDHb:GSL bpExact:'Exact' bpExact-lap:'Lap'",
      " bpExact-full:'Exact-full' bpExact-lap-full:'Lap-full'",
-     "-l2 0 -b 10 100 950 -t 1 -f 0 -n 500"]
+     "-l2 0 -b 10 100 950 -t 1 -f 0 -n 500"],
+
+    "fig25":["-d E",
+            "-l bp_huber",
+    "-p Order VB",
+    "-s Cyclic TreePartitions",
+    "-u SDDM-full LS",
+    "-pn TreePartitions:Tree LS:Exact SDDM-full:Laplacian",
+    "-l2 1e-3 -b 19 190 -t 1 -f 0 -n 500"]
      }
 

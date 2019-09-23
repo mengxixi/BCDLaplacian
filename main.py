@@ -67,10 +67,14 @@ if __name__ == "__main__":
                         (p == "VB" and s == "BGSL") or
                         (p == "VB" and s == "GSL") or
                         (p == "VB" and s == "cCyclic")or
+                        (p == "VB" and s == "Cyclic" and u == "LS") or
+                        (p == "Order" and s == "TreePartitions") or
                         (p != "VB" and s == "IHT")or
                         (p != "VB" and s == "GSDHb")):
                         continue
 
+                    if p == "VB":
+                      block_size = -1
                     history = train.train(dataset_name=dataset_name,
                                           loss_name=loss_name,
                                           block_size=block_size,
@@ -86,7 +90,7 @@ if __name__ == "__main__":
                                           datasets_path=datasets_path)
 
                     avg_update_time = history["time"].values[-1]
-                    legend = ut.legendFunc(p, s, u, args.p_rules, args.s_rules, 
+                    legend = ut.legendFunc(p, s, u, args.p_rules, args.s_rules,
                                            args.u_rules, args.plot_names)
 
                     legend = "%s" % legend.strip("-None")
@@ -123,8 +127,25 @@ if __name__ == "__main__":
                                 "yscale":"log"}]
             
             plotList += [figureList]
+
             
 
+        for i, figlist in enumerate(plotList[0]):
+          for j, f in enumerate(figlist["traceList"]):
+            if i==0 and f["legend"] =="Exact-Cyclic-Order":
+              f["legend"] = "Exact $O(n)$"
+            elif i==1 and f["legend"] =="Exact-Cyclic-Order":
+              f["legend"] = "Exact $O(n^2)$"
+              plotList[0][0]["traceList"].append(f)
+              figlist["traceList"].pop(j)
+            elif i==0 and f["legend"] == "Exact-Tree-VB":
+              f["legend"] = "Tree $O(n)$"
+            elif i==0 and f["legend"] == "Laplacia":
+              f["legend"] = "Laplacian $O(n)$"
+            else:
+              figlist["traceList"].pop(j)
+
+        plotList[0].pop(1)
 
         ########## PLOT STAGE #########
         fig = plot.plot(plotList, expName=args.expName, path=plots_path)
